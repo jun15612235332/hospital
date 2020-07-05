@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou100.mapper.LogMapper">
+  <resultMap id="BaseResultMap" type="com.zhiyou100.model.Log">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="ope_name" jdbcType="VARCHAR" property="opeName" />
+    <result column="ope_method" jdbcType="VARCHAR" property="opeMethod" />
+    <result column="ope_desc" jdbcType="VARCHAR" property="opeDesc" />
+    <result column="ope_date" jdbcType="TIMESTAMP" property="opeDate" />
+    <result column="ope_ip" jdbcType="VARCHAR" property="opeIp" />
+  </resultMap>
+  <insert id="add">
+  		insert into log values(null,#{opeName},#{opeMethod},#{opeDesc},#{opeDate},#{opeIp})
+  </insert>
+</mapper>

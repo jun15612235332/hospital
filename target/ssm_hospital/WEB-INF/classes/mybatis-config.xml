@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!-- 上面的dtd是当前这个xml文件的约束,类似于spring的xsd约束 -->
+<configuration>
+	
+	<settings>
+		<!-- 设置开启二级缓存 -->
+		<setting name="cacheEnabled" value="true"/>
+		<!-- 开启驼峰转换 -->
+		<setting name="mapUnderscoreToCamelCase"  value="true"></setting>
+	</settings>
+	
+	<!-- 此处的配置交给spring处理 -->
+	
+	<!-- 为实体类取别名 -->
+	<typeAliases>
+		<package name="com.zhiyou100.model"/>
+	</typeAliases>
+	
+	<mappers>
+		<package name="com.zhiyou100.mapper"/>
+	</mappers>
+	
+	
+</configuration>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace: 使用名称空间区分sql会话, 路径一般都是接口文件的全路径 -->
+<mapper namespace="com.zhiyou100.mapper.DrugMapper">
+	<cache></cache>
+	<select id="findAll" resultType="Drug" parameterType="Map">
+		select drug_num,drug_name,drug_type,simple_detail,status,surplus  
+		from drug 
+		<where>
+			<if test="nameMap != null and nameMap != ''">
+				and drug_name like concat('%',#{nameMap},'%') 
+			</if>
+			<if test="drugTypeMap != null and drugTypeMap != ''">
+				and drug_type like concat('%',#{drugTypeMap},'%') 
+			</if>
+		</where> 
+	</select>
+	<select id="findMedicineById" resultType="Drug">
+		select * from drug where drug_num=#{drugNum}
+	</select>
+	<insert id="add" parameterType="Drug">
+		insert into drug values(#{drugNum},#{drugUrl},#{purchasPrice},
+		#{salePrice},#{drugName},#{drugType},#{simpleDetail},#{prodecedDate},#{expirationDate},
+		#{qualityDate},#{detail},#{manufacture},#{useInfor},#{totalStock},#{surplus},1,#{noted})
+	</insert>
+	<update id="update">
+		update drug set purchas_price=#{purchasPrice},sale_price=#{salePrice},drug_name=#{drugName},
+		drug_type=#{drugType},simple_detail=#{simpleDetail},prodeced_date=#{prodecedDate},expiration_date=#{expirationDate},quality_date=#{qualityDate},detail=#{detail},
+		manufacture=#{manufacture},use_infor=#{useInfor},total_stock=#{totalStock},surplus=#{surplus},status=#{status},noted=#{noted} where drug_num=#{drugNum}
+	</update>
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace: 使用名称空间区分sql会话, 路径一般都是接口文件的全路径 -->
+<mapper namespace="com.zhiyou100.mapper.ChargeManagerMapper">
+	<cache></cache>
+	<resultMap id="chargeMap" type="ChargeManager">
+		<id column="id" property="id" />
+		<result column="medical_record" property="medicalRecord" />
+		<result column="pay_items_id" property="payItemsId" />
+		<result column="charge_money" property="chargeMoney" />
+		<result column="charge_time" property="chargeTime" />
+		<association property="registrationInfor" javaType="RegistrationInfor">
+			<result column="name" property="name"/>
+		</association>
+		<association property="payItems" javaType="PayItems">
+			<result column="charge_item_name" property="chargeItemName"/>
+			<result column="receivable_money" property="receivableMoney"/>
+		</association>
+	</resultMap>
+	<select id="findAll" resultMap="chargeMap" parameterType="Map">
+		select c.*,r.name,p.charge_item_name 
+		from charge_manager c,registration_infor r,pay_items p 
+		where c.medical_record=r.medical_record and c.pay_items_id=p.id 
+			<if test="medicalRecordMap != null and medicalRecordMap != ''">
+				and c.medical_record like concat('%',#{medicalRecordMap},'%') 
+			</if>
+			<if test="nameMap != null and nameMap != ''">
+				and r.name like concat('%',#{nameMap},'%') 
+			</if>
+	</select>
+	<select id="findChargeById" resultMap="chargeMap">
+		select c.*,r.name,p.charge_item_name,p.receivable_money  
+		from charge_manager c,registration_infor r,pay_items p 
+		where c.medical_record=r.medical_record and c.pay_items_id=p.id and c.id=#{id}
+	</select>
+	
+	<insert id="add" parameterType="ChargeManager">
+		insert into charge_manager values(null,#{medicalRecord},#{payItemsId},#{chargeMoney},#{chargeTime})
+	</insert>
+	<delete id="delete">
+		delete from charge_manager where id=#{id}
+	</delete>
+	<update id="update">
+		update charge_manager set pay_items_id=#{payItemsId},charge_money=#{chargeMoney} where id=#{id}
+	</update> 
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace: 使用名称空间区分sql会话, 路径一般都是接口文件的全路径 -->
+<mapper namespace="com.zhiyou100.mapper.PayItemsMapper">
+	<cache></cache>
+	<select id="findAll" resultType="PayItems">
+		select * from pay_items
+	</select> 
+	<select id="findAllName" resultType="PayItems">
+		select charge_item_name from pay_items
+	</select> 
+</mapper>

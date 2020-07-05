@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace: 使用名称空间区分sql会话, 路径一般都是接口文件的全路径 -->
+<mapper namespace="com.zhiyou100.mapper.RegistrationInforMapper">
+	<cache></cache>
+	<resultMap id="registrationMap" type="RegistrationInfor">
+		<id column="medical_record" property="medicalRecord" />
+		<result column="name" property="name" />
+		<result column="certificate_type" property="certificateType" />
+		<result column="ID_num" property="idNum" />
+		<result column="social_safe_num" property="socialSafeNum" />
+		<result column="phone" property="phone" />
+		<result column="self_paying" property="selfPaying" />
+		<result column="sex" property="sex" />
+		<result column="career" property="career" />
+		<result column="early_appointment" property="earlyAppointment" />
+		<result column="doctor_id" property="doctorId" />
+		<result column="status" property="status" />
+		<result column="noted" property="noted" />
+		<result column="time" property="time" />
+		<result column="section_id" property="sectionId" />
+		<result column="age" property="age" />
+		<result column="registration_fee" property="registrationFee" />
+		<association property="section" javaType="Section">
+			<result column="secco_name" property="seccoName"/>
+		</association>
+		<association property="doctor" javaType="Doctor">
+			<result column="doctorName" property="name"/>
+		</association>
+	</resultMap>
+	<select id="findAll" resultMap="registrationMap" parameterType="Map">
+		select r.*,d.name doctorName,s.secco_name 
+		from registration_infor r,section s,doctor d where r.doctor_id=d.id and r.section_id=s.id 
+			<if test="medicalRecordMap != null and medicalRecordMap != ''">
+				and r.medical_record like concat('%',#{medicalRecordMap},'%') 
+			</if>
+			<if test="doctorMap != null and doctorMap != ''">
+				and r.doctor_id like concat('%',#{doctorMap},'%') 
+			</if>
+			<if test="sectionMap != null and sectionMap != ''">
+				and r.section_id like concat('%',#{sectionMap},'%') 
+			</if>
+			<if test="startTimeMap != null and startTimeMap != ''">
+				and r.time &gt; #{startTimeMap} 
+			</if>
+			<if test="endTimeMap != null and endTimeMap != ''">
+				and r.time &lt; #{endTimeMap} 
+			</if>
+	</select>
+	<select id="findRegistrationById" resultMap="registrationMap">
+		select r.*,d.name doctorName,s.secco_name 
+		from registration_infor r,section s,doctor d where r.doctor_id=d.id and r.section_id=s.id and r.medical_record=#{medicalRecord}
+	</select>
+	<insert id="add" parameterType="RegistrationInfor">
+		insert into registration_infor values(#{medicalRecord},#{name},#{certificateType},
+		#{idNum},#{socialSafeNum},#{phone},#{selfPaying},#{sex},#{career},#{earlyAppointment},
+		#{doctorId},'已挂号',#{noted},now(),#{sectionId},#{age},#{registrationFee})
+	</insert>
+	<update id="retreat">
+		update registration_infor set status = '已退号' where medical_record=#{medicalRecord}
+	</update>
+	<update id="deleteByUidArr">
+		update registration_infor set status = '已退号' 
+		<where>
+			 medical_record in 
+			 <foreach collection="array" item="value" open="(" close=")" separator=",">
+			 	#{value}
+			 </foreach>
+		</where>
+	</update>
+	<update id="update">
+		update registration_infor set name=#{name},certificate_type=#{certificateType},ID_num=#{idNum},social_safe_num=#{socialSafeNum},
+		phone=#{phone},self_paying=#{selfPaying},sex=#{sex},career=#{career},early_appointment=#{earlyAppointment},doctor_id=#{doctorId},
+		noted=#{noted},section_id=#{sectionId},age=#{age},registration_fee=#{registrationFee} where medical_record=#{medicalRecord}
+	</update>
+	
+</mapper>

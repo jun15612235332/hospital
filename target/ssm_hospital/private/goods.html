@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试redis</title>
+    <link rel="stylesheet" type="text/css" href="../Css/bootstrap.css"/>
+</head>
+<body>
+<!-- /JS 会丢失项目名 -->
+<script type="text/javascript" src="../Js/jquery.js"></script>
+<script type="text/javascript" src="../Js/bootstrap.js"></script>
+<body>
+<button onclick="showList()">展示全部数据</button>
+<div class="col-md-8">
+    <table class="table table-bordered">
+        <tr id="t1">
+            <td>编号</td>
+            <td>名称</td>
+            <td>介绍</td>
+            <td>图片</td>
+        </tr>
+
+    </table>
+</div>
+</body>
+<script type="text/javascript">
+    function showList() {
+        $.ajax({
+            // /showList.do 从8080开始 ,showList从当前项目开始
+            "url": "showList.do",
+            "type": "get",
+            "success": function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    $("#t1").after("<tr><td class='num' >" + data[i].gId + "</td><td>" + data[i].gName + "</td><td>" + data[i].gDesc + "</td><td><img width='100px' height='100px' src='" + data[i].gImgUrl + "'></td></tr>");
+                }
+            },
+            "error": function () {
+                alert("出错啦");
+            }
+        });
+    }
+</script>
+</body>
+</html>

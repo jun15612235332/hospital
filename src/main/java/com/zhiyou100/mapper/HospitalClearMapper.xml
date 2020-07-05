@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace: 使用名称空间区分sql会话, 路径一般都是接口文件的全路径 -->
+<mapper namespace="com.zhiyou100.mapper.HospitalClearMapper">
+	<cache></cache>
+	<!-- <resultMap id="hospitalClearMap" type="HospitalClear">
+		<id column="medical_record" property="medicalRecord" />
+		<result column="caregiver" property="caregiver" />
+		<result column="bed_id" property="bedId" />
+		<result column="pay_the_deposit" property="payTheDeposit" />
+		<result column="state_illness" property="stateIllness" />
+		<association property="registrationInfor" javaType="RegistrationInfor">
+			<result column="name" property="name"/>
+			<result column="phone" property="phone"/>
+			<result column="time" property="time"/>
+			<result column="certificate_type" property="certificateType"/>
+			<result column="ID_num" property="idNum"/>
+			<result column="social_safe_num" property="socialSafeNum"/>
+			<result column="self_paying" property="selfPaying"/>
+			<result column="sex" property="sex"/>
+			<result column="age" property="age"/>
+			<result column="early_appointment" property="earlyAppointment"/>
+			<result column="noted" property="noted"/>
+		</association>
+		<association property="hospitalClear" javaType="HospitalClear">
+			<result column="clear_status" property="clearStatus"/>
+		</association>
+		<association property="section" javaType="Section">
+			<result column="secco_name" property="seccoName"/>
+		</association>
+		<association property="doctor" javaType="Doctor">
+			<result column="doctorName" property="name"/>
+		</association>
+	</resultMap> -->
+	<!-- <select id="findAll" resultMap="hospitalMap" parameterType="Map">
+		select hi.medical_record,r.name,hi.bed_id,r.phone,hi.pay_the_deposit,d.name doctorName,r.time,s.secco_name,hc.clear_status 
+		from hospital_infor hi,hospital_clear hc,registration_infor r,doctor d,section s 
+		where hi.medical_record=r.medical_record and hi.medical_record=hc.medical_record 
+		and r.doctor_id=d.id and r.section_id=s.id
+			<if testES="medicalRecordMap != null and medicalRecordMap != ''">
+				and r.medical_record like concat('%',#{medicalRecordMap},'%') 
+			</if>
+			<if testES="doctorMap != null and doctorMap != ''">
+				and r.doctor_id like concat('%',#{doctorMap},'%') 
+			</if>
+			<if testES="sectionMap != null and sectionMap != ''">
+				and r.section_id like concat('%',#{sectionMap},'%') 
+			</if>
+			<if testES="startTimeMap != null and startTimeMap != ''">
+				and r.time &gt; #{startTimeMap} 
+			</if>
+			<if testES="endTimeMap != null and endTimeMap != ''">
+				and r.time &lt; #{endTimeMap} 
+			</if>
+	</select> -->
+	<select id="exitById" resultType="String">
+		select clear_status 
+		from hospital_clear 
+		where medical_record=#{medical_record}
+	</select>
+	<!-- 
+	<insert id="add" parameterType="RegistrationInfor">
+		insert into registration_infor values(#{medicalRecord},#{name},#{certificateType},
+		#{idNum},#{socialSafeNum},#{phone},#{selfPaying},#{sex},#{career},#{earlyAppointment},
+		#{doctorId},#{status},'已挂号',#{noted},now(),#{sectionId},#{age},#{registrationFee})
+	</insert>
+	-->
+	<insert id="addStatus" parameterType="String">
+		insert into hospital_clear(medical_record,clear_status) values(#{medicalRecord},'已住院')
+	</insert>
+	<update id="updateStatus">
+		update hospital_clear set clear_status = '已退院' where medical_record=#{medicalRecord}
+	</update>
+	<update id="outHospital">
+		update hospital_clear set clear_status='已出院' where medical_record=#{medicalRecord}
+	</update>
+	<!-- <update id="update">
+		update hospital_infor set caregiver=#{caregiver},bed_id=#{bedId},pay_the_deposit=#{payTheDeposit},state_illness=#{stateIllness} where medical_record=#{medicalRecord}
+	</update>  -->
+</mapper>

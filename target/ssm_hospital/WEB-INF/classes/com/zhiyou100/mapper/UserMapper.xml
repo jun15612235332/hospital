@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace: 使用名称空间区分sql会话, 路径一般都是接口文件的全路径 -->
+<mapper namespace="com.zhiyou100.mapper.UserMapper">
+	<cache></cache>
+	<resultMap id="userMap" type="User">
+		<id column="id" property="id" />
+		<result column="user_name" property="userName" />
+		<result column="password" property="password" />
+		<result column="update_time" property="updateTime" />
+		<result column="status" property="status" />
+		<result column="real_name" property="realName" />
+		<result column="email" property="email" />
+		<result column="salt" property="salt" />
+		<association property="role" javaType="Role">
+			<result column="role_name" property="roleName" />
+		</association>
+	</resultMap>
+	<insert id="add" parameterType="User">
+		insert into user
+		values(null,#{userName},#{password},null,#{status},#{realName},#{email},#{salt})
+	</insert>
+	<select id="findUserByUnameAndUpassword" resultMap="userMap">
+		select * from
+		user where user_name=#{username} and password=#{password} and status=1
+	</select>
+	<!-- 登录验证用的 -->
+	<select id="findUserByUname" resultMap="userMap">
+		select * from user where
+		user_name=#{username}
+	</select>
+	<!-- 根据用户名查询数据 -->
+	<select id="findUserByUsername" resultMap="userMap">
+		select
+		u.*,r.role_name 
+		from user u,role r,user_role
+		ur
+		where u.id=ur.user_id and
+		ur.role_id=r.id and u.user_name=#{userName}
+	</select>
+	<select id="findAll" resultMap="userMap" parameterType="Map">
+		select
+		u.id,u.user_name,u.real_name,u.status,r.role_name from user
+		u,role r,user_role
+		ur
+		where u.id=ur.user_id and ur.role_id=r.id
+		<if test="usernameMap != null and usernameMap != ''">
+			and u.user_name like concat('%',#{usernameMap},'%')
+		</if>
+	</select>
+	<select id="findRolesByUsername" resultType="java.lang.String">
+		select r.role_num
+		from user u,user_role ur,role r where u.id=ur.user_id
+		and
+		ur.role_id=r.id and u.user_name=#{username}
+	</select>
+	<select id="findIdByUsername" resultType="int">
+		select id
+		from
+		user where
+		user_name=#{userName}
+	</select>
+	<select id="findPermisByRoles" resultType="java.lang.String"
+		parameterType="java.lang.String">
+		select p.resource_url from role r,role_permission rp,permission p
+		where r.id=rp.role_id and rp.permission_id=p.id and r.role_num in
+		<foreach collection="list" index="index" item="item" open="("
+			separator="," close=")">
+			#{item,jdbcType=VARCHAR}
+		</foreach>
+	</select>
+
+</mapper>

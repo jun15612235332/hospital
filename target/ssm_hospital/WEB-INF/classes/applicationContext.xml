@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop 
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 扫描注解 -->
+	<context:component-scan
+		base-package="com.zhiyou100">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+
+	<!-- 加载jdbc.properties文件 -->
+	<context:property-placeholder
+		location="classpath:jdbc.properties" />
+
+	<!-- 数据库连接池 -->
+	<bean id="dataSource"
+		class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<!-- 配置数据源信息 -->
+		<property name="driverClass" value="${jdbc.driver}"></property>
+		<property name="jdbcUrl" value="${jdbc.url}"></property>
+		<property name="user" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+
+	<!-- 配置Spring的事务管理器 -->
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<!-- 文件上传解析器 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 限制文件上传的大小 : 单位是byte 字节 B -->
+		<property name="maxUploadSize" value="10000000000"></property>
+		<!-- 编码格式 -->
+		<property name="defaultEncoding" value="UTF-8"></property>
+	</bean>
+
+
+	<!-- 注解实现aop -->
+	<tx:annotation-driven
+		transaction-manager="txManager" />
+
+
+	<!-- =================== spring整合mybatis ====================== -->
+	<!-- 配置SqlSessionFactory -->
+	<bean id="sqlSessionFactory"
+		class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation"
+			value="classpath:mybatis-config.xml"></property>
+		<property name="dataSource" ref="dataSource"></property>
+
+		<!-- 分页插件 -->
+		<property name="plugins">
+			<array>
+				<bean class="com.github.pagehelper.PageHelper">
+					<property name="properties">
+						<value>
+							<!--使用的数据库类型 -->
+							dialect=mysql
+							reasonable=true
+							supportMethodsArguments=true
+							params=count=countSql
+							autoRuntimeDialect=true
+						</value>
+					</property>
+				</bean>
+			</array>
+		</property>
+	</bean>
+
+	<!-- 让spring托管mapping扫描功能,即让spring完成 生产mapper代理 过程 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 扫描器注入SqlSessionFactory -->
+		<property name="sqlSessionFactoryBeanName"
+			value="sqlSessionFactory"></property>
+		<!-- 扫描的mapper的路径 -->
+		<property name="basePackage" value="com.zhiyou100.mapper"></property>
+	</bean>
+
+
+	<!-- =================== spring整合Shiro ====================== -->
+	<!-- 创建自定义Realm对象 -->
+	<bean id="myRealm" class="com.zhiyou100.shiro.MyRealm" >
+		<property name="credentialsMatcher">
+			<bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+				<property name="hashAlgorithmName" value="MD5"></property>
+				<property name="hashIterations" value="10"></property>
+			</bean>
+		</property>
+	</bean>
+
+	<!-- 创建SecurityManager,并注入自定义Realm -->
+	<bean id="securityManager"
+		class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm">
+			<ref bean="myRealm"></ref>
+		</property>
+	</bean>
+
+	<!-- Shiro 的 Web 过滤器 id 必!须!是!web.xml中配置的Shiro过滤器的filter-name -->
+	<bean id="shiroFilter"
+		class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<!-- 登录的url : 相当于ini文件中的authc.loginUrl=/login -->
+		<!-- <property name="loginUrl" value="/nologin.jsp" /> -->
+		<!-- 认证授权失败跳转的错误页面 : 相当于是ini文件中roles.unauthorizedUrl=/error.jsp perms.unauthorizedUrl=/error.jsp -->
+		<property name="unauthorizedUrl" value="/error.jsp" />
+		<!-- 配置的拦截路径 : 相当于是ini文件中的[urls] 配置 -->
+		<property name="filterChainDefinitions">
+			<value>
+				<!-- 从上至下的逐一匹配 -->
+				<!-- 静态资源放行 -->
+				/assets/** = anon
+				/Css/** = anon
+				/front/** = anon
+				/images/** = anon
+				/Js/** = anon
+				<!-- 普通页面放行 -->
+				/index.jsp = anon
+				/error.jsp = anon
+				/login.jsp = anon
+				/user/login.do = anon
+				/exit.do = anon
+				<!-- 首页需要认证 -->
+				/registration/* = authc
+				<!-- 该路径需要认证且必须有相对应角色才可以访问,在Realm中进行授权 -->
+				/user/add.do=authc
+				<!-- 该路径需要认证且必须有/user/delete权限才可以访问,在Realm中进行授权 -->
+				/user/delete.do=authc,perms["/user/delete"]
+				<!-- 从上至下依次匹配路径,如果以上都没匹配成功,走最后一个/** -->
+				/** = authc
+			</value>
+		</property>
+	</bean>
+
+	<!-- ====================================redis配置========================================== -->
+	<!-- 连接池配置 -->
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<!-- 最大连接数 -->
+		<property name="maxTotal" value="30" />
+		<!-- 最大空闲连接数 -->
+		<property name="maxIdle" value="10" />
+		<!-- 每次释放连接的最大数目 -->
+		<property name="numTestsPerEvictionRun" value="1024" />
+		<!-- 释放连接的扫描间隔（毫秒） -->
+		<property name="timeBetweenEvictionRunsMillis" value="30000" />
+		<!-- 连接最小空闲时间 -->
+		<property name="minEvictableIdleTimeMillis" value="1800000" />
+		<!-- 连接空闲多久后释放, 当空闲时间>该值 且 空闲连接>最大空闲连接数 时直接释放 -->
+		<property name="softMinEvictableIdleTimeMillis" value="10000" />
+		<!-- 获取连接时的最大等待毫秒数,小于零:阻塞不确定的时间,默认-1 -->
+		<property name="maxWaitMillis" value="1500" />
+		<!-- 在获取连接的时候检查有效性, 默认false -->
+		<property name="testOnBorrow" value="false" />
+		<!-- 在空闲时检查有效性, 默认false -->
+		<property name="testWhileIdle" value="true" />
+		<!-- 连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true -->
+		<property name="blockWhenExhausted" value="false" />
+	</bean>
+
+	<!-- redis单机 通过连接池 -->
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool"
+		  destroy-method="close">
+		<constructor-arg name="poolConfig" ref="jedisPoolConfig" />
+		<constructor-arg name="host" value="192.168.87.128" />
+		<constructor-arg name="port" value="6379" />
+	</bean>
+
+</beans>

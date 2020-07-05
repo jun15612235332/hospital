@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace: 使用名称空间区分sql会话, 路径一般都是接口文件的全路径 -->
+<mapper namespace="com.zhiyou100.mapper.DoctorMapper">
+	<cache></cache>
+	<resultMap id="doctorMap" type="Doctor">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="certificate_type" property="certificateType" />
+		<result column="ID_num" property="idNum" />
+		<result column="phone" property="phone" />
+		<result column="special_plane" property="specialPlane" />
+		<result column="sex" property="sex" />
+		<result column="age" property="age" />
+		<result column="birther" property="birther" />
+		<result column="email" property="email" />
+		<result column="section_id" property="sectionId" />
+		<result column="education" property="education" />
+		<result column="noted" property="noted" />
+		<result column="time" property="time" />
+		<association property="section" javaType="Section">
+			<result column="secco_name" property="seccoName"/>
+		</association>
+	</resultMap>
+	<select id="findAll" resultMap="doctorMap" parameterType="Map">
+		select d.*,s.secco_name from doctor d,section s where d.section_id=s.id
+			<if test="idMap != null and idMap != ''">
+				and d.id like concat('%',#{idMap},'%') 
+			</if>
+			<if test="nameMap != null and nameMap != ''">
+				and d.name like concat('%',#{nameMap},'%') 
+			</if>
+			<if test="sectionMap != null and sectionMap != ''">
+				and d.section_id like concat('%',#{sectionMap},'%') 
+			</if>
+	</select>
+	<insert id="add" parameterType="doctor">
+		insert into doctor values(null,#{name},#{certificateType},#{idNum},#{phone},#{specialPlane},#{sex},
+		#{age},#{birther},#{email},#{sectionId},#{education},#{noted},now())
+	</insert> 
+	<select id="findDoctorById" resultMap="doctorMap">
+		select d.*,s.secco_name 
+		from section s,doctor d where d.section_id=s.id and d.id=#{id}
+	</select>
+	<update id="update" parameterType="doctor">
+		update doctor set name=#{name},certificate_type=#{certificateType},ID_num=#{idNum},phone=#{phone},
+		special_plane=#{specialPlane},sex=#{sex},birther=#{birther},email=#{email},
+		noted=#{noted},section_id=#{sectionId},age=#{age},education=#{education} where id=#{id}
+	</update>
+</mapper>
